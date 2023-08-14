@@ -51,59 +51,87 @@ const holidays = {
 const christmas = 6;
 const futureId = 9;
 
-// Do not change code above this comment
+// Do not change code above this
+const futureIdHoliday = holidays[futureId] && holidays[futureId].name;
 
-console.log(holidays.futureId.name || "ID {futureId} not created yet");
+console.log(futureIdHoliday || `ID ${futureId} not created yet`);
 
-copied = holidays.christmas;
-copied = { name: "X-mas Day" };
-correctDate = copied.date;
-correctDate.hours = 0;
-correctDate.minutes = 0;
-isEarlier = copied.date < holidays[6].date;
-console.log("New date is earlier:", isEarlier);
+const copied = {
+	id: christmas,
+	name: "X-mas Day",
+	date: holidays[christmas].date,
+};
+
+const correctDate = new Date(holidays[christmas].date);
+correctDate.setHours(0);
+correctDate.setMinutes(0);
+const isEarlier = correctDate < copied.date;
+
+console.log(`New date is earlier: ${isEarlier}`);
+
 if (isEarlier) copied.date = correctDate;
-console.log("ID change:", holidays[christmas].id != copied.id || copied.id);
-console.log(
-	"Name change:",
-	holidays[christmas].name != copied.name || copied.name
-);
-console.log(
-	"Date change:",
-	holidays[christmas].date != copied.date || copied.date
-);
 
-const firstHolidayTimestamp = Math.min(
-	holidays[0].date.getTime,
-	holidays[1].date.getTime,
-	holidays[2].date.getTime,
-	holidays[3].date.getTime,
-	holidays[4].date.getTime,
-	holidays[5].date.getTime,
-	holidays[6].date.getTime,
-	holidays[7].date.getTime,
-	holidays[8].date.getTime
-);
+const changes = {
+	id: copied.id !== holidays[christmas].id && copied.id,
+	name: copied.name !== holidays[christmas].name && copied.name,
+	// British English uses day-month-year date format
+	date:
+		copied.date !== holidays[christmas].date &&
+		copied.date.toLocaleDateString("en-GB"),
+	reviewMessage: function () {
+		console.log(`ID change: ${this.id}`);
+		console.log(`Name change: ${this.name}`);
+		console.log(`Date change: ${this.date}`);
+	},
+	complete: function () {
+		if (this.id) holidays[christmas].id = copied.id;
+		if (this.name) holidays[christmas].name = copied.name;
+		if (this.date) holidays[christmas].date = copied.date;
+	},
+};
 
-const lastHolidayTimestamp = Math.max(
-	holidays[0].date.getTime,
-	holidays[1].date.getTime,
-	holidays[2].date.getTime,
-	holidays[3].date.getTime,
-	holidays[4].date.getTime,
-	holidays[5].date.getTime,
-	holidays[6].date.getTime,
-	holidays[7].date.getTime,
-	holidays[8].date.getTime
-);
+changes.reviewMessage();
+changes.complete();
 
-const firstDay = firstHolidayTimestamp.getDate;
-const firstMonth = firstHolidayTimestamp.getMonth;
-const lastDay = lastHolidayTimestamp.getDate;
-const lastMonth = lastHolidayTimestamp.getMonth;
+let firstHolidayUnix = undefined;
+let lastHolidayUnix = undefined;
+let itemCount = 0; // Total item count to be used for Random Holiday selector
 
-console.log("{firstDay}/{firstMonth}/{currentYear}");
-console.log("{lastDay}/{lastMonth}/{currentYear}");
+for (item in holidays) {
+	const isDateObj = typeof holidays[item].date === "object";
+	const itemDate = isDateObj
+		? holidays[item].date
+		: new Date(holidays[item].date);
 
-const randomHoliday = holidays[Math.random];
-console.log(randomHoliday.date);
+	const itemUnix = itemDate.getTime();
+
+	if (firstHolidayUnix !== undefined) {
+		if (itemUnix < firstHolidayUnix) firstHolidayUnix = itemUnix;
+	} else {
+		firstHolidayUnix = itemUnix;
+	}
+
+	if (lastHolidayUnix !== undefined) {
+		if (itemUnix > lastHolidayUnix) lastHolidayUnix = itemUnix;
+	} else {
+		lastHolidayUnix = itemUnix;
+	}
+	itemCount += 1;
+}
+
+const firstHoliday = new Date(firstHolidayUnix).toLocaleDateString("en-GB");
+const lastHoliday = new Date(lastHolidayUnix).toLocaleDateString("en-GB");
+console.log(firstHoliday);
+console.log(lastHoliday);
+
+itemCount -= 1;
+const randomKey = Math.round(Math.random() * itemCount);
+let randomHoliday = undefined;
+
+if (typeof holidays[randomKey].date === "object") {
+	randomHoliday = holidays[randomKey].date;
+} else {
+	randomHoliday = new Date(holidays[randomKey].date);
+}
+
+console.log(randomHoliday.toLocaleDateString("en-GB"));
